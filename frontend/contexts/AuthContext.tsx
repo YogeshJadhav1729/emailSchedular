@@ -25,18 +25,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      authAPI.getMe()
-        .then((data) => {
-          setUser(data.user);
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        authAPI.getMe()
+          .then((data) => {
+            setUser(data.user);
+          })
+          .catch(() => {
+            localStorage.removeItem('token');
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
+      }
     } else {
       setLoading(false);
     }
@@ -44,12 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (userData: { email: string; name: string; avatar: string; googleId: string }) => {
     const data = await authAPI.googleLogin(userData);
-    localStorage.setItem('token', data.token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', data.token);
+    }
     setUser(data.user);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
     setUser(null);
   };
 

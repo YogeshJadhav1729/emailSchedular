@@ -34,7 +34,7 @@ export default function Dashboard() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user) {
+    if (user && (activeTab === 'scheduled' || activeTab === 'sent')) {
       loadData();
     }
   }, [user, activeTab]);
@@ -91,7 +91,6 @@ export default function Dashboard() {
     setSubmitting(true);
     try {
       await emailAPI.scheduleEmail({
-        userId: user.id,
         subject,
         body,
         recipients,
@@ -412,7 +411,7 @@ export default function Dashboard() {
                   <input
                     type="number"
                     value={delayBetweenEmails}
-                    onChange={(e) => setDelayBetweenEmails(parseInt(e.target.value))}
+                    onChange={(e) => setDelayBetweenEmails(parseInt(e.target.value, 10))}
                     min="0"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -425,7 +424,7 @@ export default function Dashboard() {
                   <input
                     type="number"
                     value={hourlyLimit}
-                    onChange={(e) => setHourlyLimit(parseInt(e.target.value))}
+                    onChange={(e) => setHourlyLimit(parseInt(e.target.value, 10))}
                     min="1"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   />

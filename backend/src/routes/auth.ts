@@ -4,7 +4,11 @@ import prisma from '../db';
 
 const router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is not set. Please configure it in your .env file.');
+}
 
 /**
  * Mock Google OAuth callback (for demo purposes)
@@ -17,6 +21,10 @@ router.post('/google', async (req: Request, res: Response) => {
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
+    }
+
+    if (!googleId) {
+      return res.status(400).json({ error: 'Google ID is required for authentication' });
     }
 
     // Create or update user

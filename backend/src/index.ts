@@ -35,8 +35,15 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: err.message || 'Internal server error' });
+  // Log sanitized error (not full stack trace in production)
+  console.error('Server error:', err.message);
+  
+  // In development, include more details
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Stack trace:', err.stack);
+  }
+  
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start server
