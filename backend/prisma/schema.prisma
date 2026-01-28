@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?
+  avatar        String?
+  googleId      String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  scheduledEmails ScheduledEmail[]
+}
+
+model ScheduledEmail {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  subject           String
+  body              String
+  recipients        String[] // Array of email addresses
+  
+  scheduledAt       DateTime
+  startTime         DateTime?
+  delayBetweenEmails Int     @default(0) // in milliseconds
+  hourlyLimit       Int      @default(100)
+  
+  status            EmailStatus @default(PENDING)
+  jobId             String?     @unique
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  sentEmails        SentEmail[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model SentEmail {
+  id                String   @id @default(uuid())
+  scheduledEmailId  String
+  scheduledEmail    ScheduledEmail @relation(fields: [scheduledEmailId], references: [id], onDelete: Cascade)
+  
+  recipient         String
+  subject           String
+  body              String
+  
+  status            SentStatus @default(PENDING)
+  error             String?
+  sentAt            DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@unique([scheduledEmailId, recipient])
+  @@index([scheduledEmailId])
+  @@index([status])
+  @@index([recipient])
+}
+
+enum EmailStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum SentStatus {
+  PENDING
+  SENT
+  FAILED
+}
